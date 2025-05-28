@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>made in NPU</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-weight: 700;
+            color: #222;
+        }
+
+        form {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 480px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            font-weight: 600;
+            margin-top: 15px;
+            align-self: flex-start;
+        }
+
+        input[type="file"].custom-file {
+            color: transparent;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        input[type="file"].custom-file::-webkit-file-upload-button {
+            visibility: hidden;
+        }
+
+        input[type="file"].custom-file::before {
+            content: "点击选择图片";
+            display: inline-block;
+            background: #3a86ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            outline: none;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(58,134,255,0.3);
+        }
+
+        input[type="file"].custom-file:hover::before {
+            background: #265fcb;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            font-size: 18px;
+            padding: 12px 15px;
+            margin-top: 8px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #3a86ff;
+            box-shadow: 0 0 8px rgba(58,134,255,0.3);
+        }
+
+        input[type="submit"] {
+            margin-top: 30px;
+            padding: 15px 0;
+            width: 100%;
+            font-size: 20px;
+            font-weight: 700;
+            background-color: #3a86ff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(58,134,255,0.4);
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #265fcb;
+        }
+
+        .results-row {
+            display: flex;
+            gap: 30px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 960px;
+            width: 100%;
+        }
+
+        .results-row div {
+            text-align: center;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            flex: 0 0 300px;
+            box-sizing: border-box;
+        }
+
+        .results-row img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            user-select: none;
+        }
+
+        p {
+            font-weight: 600;
+            font-size: 16px;
+            color: #555;
+            margin: 0;
+        }
+
+        #file-count {
+            margin-top: 5px;
+            align-self: flex-start;
+            font-size: 14px;
+            color: #666;
+        }
+
+        #processing-message {
+            margin-top: 20px;
+            color: #3a86ff;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>零样本遥感场景分类器</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <label for="images">选择图片（可多选）</label>
+        <input type="file" id="images" name="images" multiple accept="image/*" required class="custom-file">
+        <p id="file-count">已选择图片：0 张</p>
+
+        <label for="task-select">功能选择</label>
+        <select id="task-select" name="task" onchange="onTaskChange(this.value)" required>
+            <option value="classify">场景分类</option>
+            <option value="count">对象计数</option>
+            <option value="retrieve">场景检索</option>
+        </select>
+
+        <div id="classify-input">
+            <label for="categories">类别（空格分隔）</label>
+            <input type="text" id="categories" name="categories" placeholder="例如：沙滩 山脉 城市">
+        </div>
+
+        <div id="count-input" style="display:none;">
+            <label for="object_name">对象名称</label>
+            <input type="text" id="object_name" name="object_name" placeholder="例如：人 车 树">
+        </div>
+
+        <div id="retrieve-input" style="display:none;">
+            <label for="scene_name">场景名称</label>
+            <input type="text" id="scene_name" name="scene_name" placeholder="例如：公园 海滩 机场">
+        </div>
+
+        <input type="submit" value="运行">
+        <p id="processing-message">正在处理，请稍后...</p>
+    </form>
+
+    {% if results %}
+    <div class="results-row">
+        {% for path, label in results %}
+            <div>
+                <img src="{{ path }}" alt="结果图片">
+                <p>{{ label }}</p>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <script>
+        function onTaskChange(task) {
+            document.getElementById('classify-input').style.display = (task === 'classify') ? 'block' : 'none';
+            document.getElementById('count-input').style.display = (task === 'count') ? 'block' : 'none';
+            document.getElementById('retrieve-input').style.display = (task === 'retrieve') ? 'block' : 'none';
+        }
+
+        const fileInput = document.getElementById('images');
+        const fileCount = document.getElementById('file-count');
+        const form = document.querySelector('form');
+        const processingMessage = document.getElementById('processing-message');
+
+        fileInput.addEventListener('change', () => {
+            const count = fileInput.files.length;
+            fileCount.textContent = `已选择图片：${count} 张`;
+        });
+
+        form.addEventListener('submit', () => {
+            processingMessage.style.display = 'block';
+        });
+    </script>
+
+</body>
+</html>
