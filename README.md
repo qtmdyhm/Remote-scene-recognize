@@ -48,3 +48,4 @@ python app.py
 写在最后：
 1.app.py里注释掉的部分用于将本地服务渗透到公网，使别的设备也能访问，如果你有这个需求，你可以参考pyngrok
 2.模型权重来自https://link.zhihu.com/?target=https%3A//github.com/ChenDelong1999/RemoteCLIP，我不生产模型，我只是模型的搬运工
+3.尽可能的使用英文进行图文匹配，如果使用中文你将会看到模型性能大大下降
