@@ -1,4 +1,3 @@
-我不知道为啥预览模式的自述文件很乱，你可以使用code模式更直观的查看它
 这是一个用于遥感图文匹配的系统，支持图像类别预测、图像目标计数以及场景检索
 该项目具有以下结构：
 │  app.py
@@ -22,10 +21,10 @@
 │      login.html
 │
 └─__pycache__
-        classify.cpython-39.pyc
-        count.cpython-39.pyc
-        search.cpython-39.pyc
-        
+classify.cpython-39.pyc
+count.cpython-39.pyc
+search.cpython-39.pyc
+
 现在请按照下面的方法运行它：
 1.创建一个空文件夹
 2.用git打开这个文件夹执行下面命令：
@@ -47,5 +46,6 @@ python app.py
 
 写在最后：
 1.app.py里注释掉的部分用于将本地服务渗透到公网，使别的设备也能访问，如果你有这个需求，你可以参考pyngrok
-2.模型权重来自https://link.zhihu.com/?target=https%3A//github.com/ChenDelong1999/RemoteCLIP           我不生产模型，我只是模型的搬运工
+2.我不生产模型，我只是模型的搬运工，模型权重来自https://link.zhihu.com/?target=https%3A//github.com/ChenDelong1999/RemoteCLIP
 3.尽可能的使用英文进行图文匹配，如果使用中文你将会看到模型性能大大下降
+
